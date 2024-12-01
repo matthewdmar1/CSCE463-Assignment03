@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <map>
 #include <random>
 
 #pragma comment(lib, "ws2_32.lib") // Automatically link the Winsock library
@@ -12,21 +13,22 @@ Class server{
 	public:
 		server();
 		~server();
-		void initiateSocket(sockaddr ip);
-		void handleDisconnect(sockaddr ip);
-		void updateClients(); //sends a copy of the clientIP vector
+		void addClient(sockaddr_in ip);
+		void handleDisconnect(sockaddr_in ip);
 		void readPacket();
+		void sendPacket();
 
 	private:
 		WSADATA wsaData;
+		SOCKET sock;
 
 		char* readBuff;
 		char* sendBuff;
 
 		std::string inviteCode;
-		std::vector<socket> clientSocks; //list of sockets to each client
-		std::vector<sockaddr> clientIPs; //list of each clients IP for transmission to clients
+		std::vector<sockaddr_in> clientIPs; //list of each clients IP for transmission to clients
 		//Whiteboard whiteboard; //instance of whiteboard sent to new members
 
 		void createInviteCode();
+		void updateClients(); //sends a copy of the clientIP vector
 };

@@ -39,7 +39,7 @@ void server::createInviteCode() {
 	}
 }
 
-void server::initiateSocket(sockaddr ip) {
+void server::initiateSocket(sockaddr_in ip) {
 	if (std::find(clientIPs.begin(), clientIPs.end(), ip)) {
 		std::cerr << "Client is already connected" << std::endl;
 		return;
@@ -51,7 +51,20 @@ void server::initiateSocket(sockaddr ip) {
 		std::cerr << "Socket initialization failed. Error: " << WSAGetLastError() << std::endl;
 		return;
 	}
-	clientSocks.push_back(temp);
+	clientSocks[ip] = temp;
+
+	updateClients();
+
+
+}
+
+void server::handleDisconnect(sockaddr ip) {
+	auto it = std::find(clientIPs.begin(), clientIPs.end(), ip);
+	if (it != clientIPs.end()) {
+		clientIPs.erase(it);
+	} else {
+		std::cerr << "IP not found in client list" << std::endl;
+	}
 
 
 }
