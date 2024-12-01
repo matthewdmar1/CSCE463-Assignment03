@@ -2,24 +2,10 @@
 
 
 server::server() {
-	//initiate winsock, error handling
-	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
-		std::cerr << "Winsock initialization failed. Error: " << WSAGetLastError() << std::endl;
-		return 1;
-	}
-	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-	if (sock == INVALID_SOCKET) {
-		std::cerr << "Socket initialization failed. Error: " << WSAGetLastError() << std::endl;
-	}
-	//create the invite code to check against incoming "syn" packets
-	createInviteCode();
+	server = true;
 }
 
 server::~server() {
-	
-	//cleanup
-	closesocket(sock);
-	WSACleanup();
 }
 
 /*void server::createInviteCode() {
@@ -41,6 +27,14 @@ server::~server() {
 	}
 }*/
 
+void server::send() override {
+
+}
+
+void server::receive() override {
+
+}
+
 void server::addClient(sockaddr_in ip) {
 	if (std::find(clientIPs.begin(), clientIPs.end(), ip)) {
 		std::cerr << "Client is already connected" << std::endl;
@@ -50,7 +44,6 @@ void server::addClient(sockaddr_in ip) {
 	clientIPs.push_back(ip);
 
 	updateClients();
-
 
 }
 
@@ -62,12 +55,13 @@ void server::handleDisconnect(sockaddr ip) {
 		std::cerr << "IP not found in client list" << std::endl;
 	}
 
+}
 
+void endSession() {
+	
 }
 
 int main() {
-	while (true) {
-		
-	}
+
 }
 

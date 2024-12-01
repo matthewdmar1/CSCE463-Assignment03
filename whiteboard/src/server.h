@@ -24,17 +24,19 @@
 * this ensures the whiteboard is up to date for new clients joining the session
 */
 
-Class server{
+Class server : public client{
 	public:
 		server();
 		~server();
+		void send() override;
+		void receive() override;
 		void addClient(sockaddr_in ip);
 		void handleDisconnect(sockaddr_in ip);
 		void endSession();
 
 	private:
 		//std::string inviteCode;
-
+		
 		//void createInviteCode();
 		void updateClients(); //sends a copy of the clientIP vector
 };
