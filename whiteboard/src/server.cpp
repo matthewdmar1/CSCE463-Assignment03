@@ -1,26 +1,28 @@
 #include "server.h"
 
+
 server::server() {
 	//initiate winsock, error handling
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
 		std::cerr << "Winsock initialization failed. Error: " << WSAGetLastError() << std::endl;
 		return 1;
 	}
+	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	if (sock == INVALID_SOCKET) {
+		std::cerr << "Socket initialization failed. Error: " << WSAGetLastError() << std::endl;
+	}
 	//create the invite code to check against incoming "syn" packets
 	createInviteCode();
 }
 
 server::~server() {
-	//close an sockets that are still open
-	for (int i = 0; i < clientSocks.size(); i++) {
-		closesocket(clientSocks[i]);
-	}
-
+	
 	//cleanup
+	closesocket(sock);
 	WSACleanup();
 }
 
-void server::createInviteCode() {
+/*void server::createInviteCode() {
 	srand(clock(0));
 	inviteCode = "";
 	int rng;
@@ -37,21 +39,15 @@ void server::createInviteCode() {
 			inviteCode += static_cast<char>(letter + 97); //ascii offset for lowercase characters
 		}
 	}
-}
+}*/
 
-void server::initiateSocket(sockaddr_in ip) {
+void server::addClient(sockaddr_in ip) {
 	if (std::find(clientIPs.begin(), clientIPs.end(), ip)) {
 		std::cerr << "Client is already connected" << std::endl;
 		return;
 	}
 
 	clientIPs.push_back(ip);
-	SOCKET temp = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-	if (temp == INVALID_SOCKET) {
-		std::cerr << "Socket initialization failed. Error: " << WSAGetLastError() << std::endl;
-		return;
-	}
-	clientSocks[ip] = temp;
 
 	updateClients();
 
@@ -67,5 +63,11 @@ void server::handleDisconnect(sockaddr ip) {
 	}
 
 
+}
+
+int main() {
+	while (true) {
+		
+	}
 }
 
