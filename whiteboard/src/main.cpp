@@ -14,6 +14,10 @@ GLFWwindow* window;
 struct color { float r, g, b; };
 struct color brushColor { 1.0f, 1.0f, 1.0f };
 struct color backColor { 0, 0, 0 };
+bool line = false;
+bool isMousePressed = false;
+int startX, startY;
+int endX, endY;
 
 int brushSize = 4;  // Initial brush size
 
@@ -79,12 +83,46 @@ void Display()
     }
 }
 
-void DrawSquare(int xpos, int ypos, int size, struct color lc)
+
+void DrawSquare(int xpos, int ypos, int xend, int yend, int size, struct color lc)
 {
+
     int halfSize = size / 2;
-    for (int y = xpos - halfSize; y <= xpos + halfSize; ++y) {
-        for (int x = ypos - halfSize; x <= ypos + halfSize; ++x) {
-            SetDrawnBufferPixel(x, y, lc);
+
+    // Function to draw a filled rectangle (faster than per-pixel drawing)
+    auto DrawRectangle = [&](int x, int y) {
+        for (int row = x - halfSize; row <= x + halfSize; ++row) {
+            for (int col = y - halfSize; col <= y + halfSize; ++col) {
+                SetDrawnBufferPixel(col, row, lc);
+            }
+        }
+    };
+
+    if (xpos == xend && ypos == yend) {
+        // If it's a single point, just draw the square
+        DrawRectangle(xpos, ypos);
+    }
+    else {
+        // Bresenham's Line Algorithm for connecting xpos, ypos to xend, yend
+        int dx = std::abs(xend - xpos);
+        int dy = std::abs(yend - ypos);
+        int sx = (xpos < xend) ? 1 : -1;
+        int sy = (ypos < yend) ? 1 : -1;
+        int err = dx - dy;
+
+        while (true) {
+            DrawRectangle(xpos, ypos); // Only draw once for each line pixel
+            if (xpos == xend && ypos == yend) break;
+
+            int e2 = 2 * err;
+            if (e2 > -dy) {
+                err -= dy;
+                xpos += sx;
+            }
+            if (e2 < dx) {
+                err += dx;
+                ypos += sy;
+            }
         }
     }
 }
@@ -94,10 +132,35 @@ void CursorPositionCallback(GLFWwindow* lWindow, double xpos, double ypos)
     int framebufferX = WINDOW_HEIGHT - 1 - (int)ypos;  // Invert the new y-coordinate
     int framebufferY = (int)xpos;                     // Swap x and y
 
-    int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+    int state = glfwGetMouseButton(lWindow, GLFW_MOUSE_BUTTON_LEFT);
+
     if (state == GLFW_PRESS) {
-        DrawSquare(framebufferX, framebufferY, brushSize, brushColor);
-        std::cout << "Mouse position is: x - " << framebufferX << ", y - " << framebufferY << std::endl;
+        if (!isMousePressed) {
+            // Record the start position
+            startX = framebufferX;
+            startY = framebufferY;
+            isMousePressed = true;
+            std::cout << "Mouse pressed at: x  " << startX << ", y  " << startY << std::endl;
+        }
+        else if (!line) {
+            // Draw as the mouse is pressed and dragged
+            DrawSquare(framebufferX, framebufferY, framebufferX, framebufferY, brushSize, brushColor);
+            std::cout << "Mouse dragging: x  " << framebufferX << ", y  " << framebufferY << std::endl;
+        }
+    }
+
+    if (state == GLFW_RELEASE && isMousePressed) {
+        // Record the end position
+        endX = framebufferX;
+        endY = framebufferY;
+        isMousePressed = false;
+
+        std::cout << "Mouse released at: x " << endX << ", y  " << endY << std::endl;
+
+        if (line) {
+            // Example for drawing a line between start and end points
+            DrawSquare(startX, startY, endX, endY, brushSize, brushColor);
+        }
     }
 }
 
@@ -127,6 +190,9 @@ void CharacterCallback(GLFWwindow* lWindow, unsigned int key)
         brushColor.r = (colorIndex & 0b100) ? 1.0f : 0.0f;
         brushColor.g = (colorIndex & 0b010) ? 1.0f : 0.0f;
         brushColor.b = (colorIndex & 0b001) ? 1.0f : 0.0f;
+    }
+    else if (key == 'l') {
+        line = (line ? false : true);
     }
     else if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
         switch (key) {
@@ -161,7 +227,7 @@ void Init()
     glfwInit();
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
     glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GL_FALSE);
-    window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Assignment 1 - Matthew Mar", NULL, NULL);
+    window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Assignment 03 - OpenGL Whiteboard", NULL, NULL);
     glfwMakeContextCurrent(window);
     glfwSetMouseButtonCallback(window, MouseCallback);
     glfwSetCursorPosCallback(window, CursorPositionCallback);
