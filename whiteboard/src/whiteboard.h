@@ -1,6 +1,4 @@
 #pragma once
-#ifndef WHITEBOARD_H
-
 
 #define GLEW_STATIC
 #include <GL/glew.h>
@@ -49,7 +47,3 @@ class WhiteBoard {
 };
 
 
-
-
-
-#endif // !WHITEBOARD_H
