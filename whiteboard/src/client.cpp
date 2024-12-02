@@ -32,6 +32,7 @@ client::~client() {
 
 void client::send() {
     while (running) {
+        //initial connection packet
         sendPacket((uint8_t)1, {}, serverAddr);
         
 
@@ -95,13 +96,12 @@ void client::sendPacket(unsigned int type, const std::vector<char>& payload, con
 }
 
 
-int main() {
-	client c(127.0.0.1);
-	std::thread sendThread(&client::send, &c);
-	std::thread receiveThread(&client::receive, &c);
-
-	sendThread.join();
-	receiveThread.join();
-
-
-}
+//int main() {
+//	client c(127.0.0.1);
+//	std::thread sendThread(&client::send, &c);
+//	std::thread receiveThread(&client::receive, &c);
+//
+//	sendThread.join();
+//	receiveThread.join();
+//
+//}

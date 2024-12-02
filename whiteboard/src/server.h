@@ -30,7 +30,7 @@ inline bool operator==(const sockaddr_in& a, const sockaddr_in& b) {
         a.sin_port == b.sin_port &&
         a.sin_addr.s_addr == b.sin_addr.s_addr;
 }
-class server {
+class server : public client{
 public:
     server();
     ~server();

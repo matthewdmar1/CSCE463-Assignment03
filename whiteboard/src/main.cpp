@@ -3,6 +3,8 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include "whiteboard.h"
+#include "server.h"
+#include "client.h"
 
 #define WINDOW_WIDTH 900
 #define WINDOW_HEIGHT 600

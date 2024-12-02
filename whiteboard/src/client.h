@@ -4,8 +4,8 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <map>
-#include <random>
+
+#include "whiteboard.h"
 
 #pragma comment(lib, "ws2_32.lib") // Automatically link the Winsock library
 
@@ -22,14 +22,20 @@ inline bool operator==(const sockaddr_in& a, const sockaddr_in& b) {
 }
 
 
-Class client{
+class client{
+	struct color { float r, g, b; };
+
+	struct drawArgs {
+		int xpos, ypos, xend, yend, size;
+		struct color lc;
+	};
 	public:
 		client(std::string serverIP);
 		~client();
 		void send();
 		void receive();
-		void handlePacket();
-		void updateWhiteboard();
+		void handlePacket(uint8_t type);
+		//void updateWhiteboard();
 
 	protected:
 		WSADATA wsaData;
@@ -42,5 +48,5 @@ Class client{
 		bool running;
 		std::vector<char> readBuff;
 		std::vector<sockaddr_in> clientIPs; //list of each clients IP for transmission to clients
-		//Whiteboard whiteboard; //instance of whiteboard sent to new members
+		//Whiteboard board; //instance of whiteboard sent to new members
 };
