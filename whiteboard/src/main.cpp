@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include "whiteboard.h"
+#include "menu.h"
 
 #define WINDOW_WIDTH 900
 #define WINDOW_HEIGHT 600
@@ -38,7 +39,15 @@ void Bind(WhiteBoard whiteboard) {
 int main()
 {
     WhiteBoard whiteboard(frameBuffer, drawnBuffer, mask, window);
+    Menu menu(window, frameBuffer, "../img/alt_menu_texture.png");
     Init();
+
+    while (true)
+    {
+        menu.Display();
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
     Bind(whiteboard);
     while (glfwWindowShouldClose(window) == 0) {
         glClear(GL_COLOR_BUFFER_BIT);
