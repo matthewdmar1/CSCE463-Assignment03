@@ -94,17 +94,6 @@ void server::handleDisconnect(sockaddr_in ip) {
 
 }
 
-void server::sendPacket(unsigned int type, const std::vector<char>& payload, const sockaddr_in& client) {
-	std::vector<char> packet;
-	packet.push_back(type);
-	packet.insert(packet.end(), payload.begin(), payload.end());
-
-	if (sendto(sock, packet.data(), packet.size(), 0, (sockaddr*)&client, sizeof(client)) == SOCKET_ERROR) {
-		std::cerr << "Failed to send packet to " << inet_ntoa(client.sin_addr) << ". Error: " << WSAGetLastError() << std::endl;
-	}
-
-}
-
 void server::endSession() {
 	//send disconnect packet to all
 	for (auto ip : clientIPs) {

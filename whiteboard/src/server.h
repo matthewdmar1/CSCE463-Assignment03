@@ -48,6 +48,6 @@ private:
 
     //void createInviteCode();
     void updateClients(); //sends a copy of the clientIP vector
-    void sendPacket(unsigned int type, const std::vector<char>& payload, const sockaddr_in& client);
+    //void sendPacket(unsigned int type, const std::vector<char>& payload, const sockaddr_in& client);
     //void buildWhiteboardMask(std::vector<char>& mask);
 };

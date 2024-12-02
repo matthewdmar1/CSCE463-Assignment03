@@ -1,7 +1,7 @@
 #include "client.h"
 #include <thread>
 
-client::client() : running(true), readBuff(1024, 0) {
+client::client(std::string serverIP) : running(true), readBuff(1024, 0) {
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
         std::cerr << "Winsock initialization failed. Error: " << WSAGetLastError() << std::endl;
         running = false;
@@ -12,18 +12,37 @@ client::client() : running(true), readBuff(1024, 0) {
     if (sock == INVALID_SOCKET) {
         std::cerr << "Socket initialization failed. Error: " << WSAGetLastError() << std::endl;
         running = false;
+        return;
+    }
+
+    memset(&serverAddr, 0, sizeof(serverAddr));
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_port = htons(8080);
+    if (inet_pton(AF_INET, serverIP.c_str(), &serverAddr.sin_addr) <= 0) {
+        std::cerr << "Invalid server IP address: " << serverIP << std::endl;
+        running = false;
     }
 }
 
 client::~client() {
-    running = false; // Stop threads
+    running = false;
     closesocket(sock);
     WSACleanup();
 }
 
 void client::send() {
     while (running) {
-        // Handle GUI input and send corresponding packets
+        sendPacket((uint8_t)1, {}, serverAddr);
+        
+
+        if (input == "q") {
+            running = false;
+            sendPacket(0x03, {}, serverAddr); // Disconnect packet
+        }
+        else if (input == "whiteboard") {
+            std::vector<char> payload{ 'W', 'B', 'U', 'P', 'D' }; // Example payload
+            sendPacket(0x05, payload, serverAddr);
+        }
     }
 }
 
@@ -51,6 +70,8 @@ void client::handlePacket(uint8_t type) {
         while (*data) {
             sockaddr_in addr = {};
             if (inet_pton(AF_INET, data, &addr.sin_addr) > 0) {
+                addr.sin_family = AF_INET;
+                addr.sin_port = htons(8080);
                 clientIPs.push_back(addr);
             }
             data += strlen(data) + 1; // Move to the next string
@@ -63,25 +84,24 @@ void client::handlePacket(uint8_t type) {
     }
 }
 
-void client::sendPacket(unsigned int type, const std::vector<char>& payload, const sockaddr_in& client) {
-	std::vector<char> packet;
-	packet.push_back(type);
-	packet.insert(packet.end(), payload.begin(), payload.end());
+void client::sendPacket(unsigned int type, const std::vector<char>& payload, const sockaddr_in& recipient) {
+    std::vector<char> packet;
+    packet.push_back(static_cast<char>(type));
+    packet.insert(packet.end(), payload.begin(), payload.end());
 
-	if (sendto(sock, packet.data(), packet.size(), 0, (sockaddr*)&client, sizeof(client)) == SOCKET_ERROR) {
-		std::cerr << "Failed to send packet to " << inet_ntoa(client.sin_addr) << ". Error: " << WSAGetLastError() << std::endl;
-	}
-
+    if (sendto(sock, packet.data(), packet.size(), 0, (sockaddr*)&recipient, sizeof(recipient)) == SOCKET_ERROR) {
+        std::cerr << "Failed to send packet to " << inet_ntoa(recipient.sin_addr) << ". Error: " << WSAGetLastError() << std::endl;
+    }
 }
 
 
 int main() {
-	client c;
+	client c(127.0.0.1);
 	std::thread sendThread(&client::send, &c);
 	std::thread receiveThread(&client::receive, &c);
 
 	sendThread.join();
 	receiveThread.join();
 
-    delete c;
+
 }
